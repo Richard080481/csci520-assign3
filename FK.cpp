@@ -198,49 +198,48 @@ vector<int> FK::getJointDescendents(int jointID) const
 // Joint orientations are always given in XYZ order (Maya convention).
 // Output: localTransforms and globalTransforms.
 void FK::computeLocalAndGlobalTransforms(
-    const vector<Vec3d> & translations, const vector<Vec3d> & eulerAngles, 
-    const vector<Vec3d> & jointOrientationEulerAngles, const vector<RotateOrder> & rotateOrders,
-    const std::vector<int> jointParents, const vector<int> & jointUpdateOrder,
-    vector<RigidTransform4d> & localTransforms, vector<RigidTransform4d> & globalTransforms)
-{
-  // Students should implement this.
-  // First, compute the localTransform for each joint, using eulerAngles and jointOrientationEulerAngles,
-  // and the "euler2Rotation" function.
-  // Then, recursively compute the globalTransforms, from the root to the leaves of the hierarchy.
-  // Use the jointParents and jointUpdateOrder arrays to do so.
-  // Also useful are the Mat3d and RigidTransform4d classes defined in the Vega folder.
+    const vector<Vec3d> &translations, const vector<Vec3d> &eulerAngles,
+    const vector<Vec3d> &jointOrientationEulerAngles,
+    const vector<RotateOrder> &rotateOrders,
+    const std::vector<int> jointParents, const vector<int> &jointUpdateOrder,
+    vector<RigidTransform4d> &localTransforms,
+    vector<RigidTransform4d> &globalTransforms) {
+  int numJoints = (int)jointUpdateOrder.size();
 
-  // The following is just a dummy implementation that should be replaced.
-  double identity[16] = {
-    1, 0, 0, 0,
-    0, 1, 0, 0,
-    0, 0, 1, 0,
-    0, 0, 0, 1 };
-  for(int i=0; i<localTransforms.size(); i++)
-  {
-    localTransforms[i] = RigidTransform4d(identity);
-    globalTransforms[i] = RigidTransform4d(identity);
+  for (int i = 0; i < numJoints; i++) {
+    int jointID = i;
+    double r[9];
+    euler2Rotation(eulerAngles[jointID].data(), r, rotateOrders[jointID]);
+    Mat3d R_user = asMat3d(r);
+
+    double ro[9];
+    euler2Rotation(jointOrientationEulerAngles[jointID].data(), ro,
+                   RotateOrder::XYZ);
+    Mat3d R_orient = asMat3d(ro);
+
+    localTransforms[jointID] =
+        RigidTransform4d(R_orient * R_user, translations[jointID]);
+  }
+
+  for (int jointID : jointUpdateOrder) {
+    int parentID = jointParents[jointID];
+    if (parentID < 0) {
+      globalTransforms[jointID] = localTransforms[jointID];
+    } else {
+      globalTransforms[jointID] =
+          globalTransforms[parentID] * localTransforms[jointID];
+    }
   }
 }
 
 // Compute skinning transformations for all the joints, using the formula:
 // skinTransform = globalTransform * invRestTransform
 void FK::computeSkinningTransforms(
-    const vector<RigidTransform4d> & globalTransforms, 
-    const vector<RigidTransform4d> & invRestGlobalTransforms,
-    vector<RigidTransform4d> & skinTransforms)
-{
-  // Students should implement this.
-
-  // The following is just a dummy implementation that should be replaced.
-  double identity[16] = {
-    1, 0, 0, 0,
-    0, 1, 0, 0,
-    0, 0, 1, 0,
-    0, 0, 0, 1 };
-  for(int i=0; i<skinTransforms.size(); i++)
-  {
-    skinTransforms[i] = RigidTransform4d(identity);
+    const vector<RigidTransform4d> &globalTransforms,
+    const vector<RigidTransform4d> &invRestGlobalTransforms,
+    vector<RigidTransform4d> &skinTransforms) {
+  for (int i = 0; i < (int)skinTransforms.size(); i++) {
+    skinTransforms[i] = globalTransforms[i] * invRestGlobalTransforms[i];
   }
 }
 
