@@ -1,0 +1,74 @@
+# Git ignore for C/C++ project with Makefile and Visual Studio
+
+# Compiled object files
+*.o
+*.lo
+*.obj
+*.elf
+*.pch
+*.gch
+*.idb
+
+# Libraries and binaries
+*.so
+*.dylib
+*.dll
+*.lib
+*.a
+*.exe
+*.out
+*.app
+
+# Debug and release folders
+[Dd]ebug/
+[Rr]elease/
+[Bb]in/
+[Oo]bj/
+build/
+
+# Visual Studio files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.VC.db
+*.VC.opendb
+*.ipch/
+*.opensdf
+*.sdf
+*.cachefile
+.vs/
+
+# Visual Studio Code
+.vscode/
+
+# macOS files
+.DS_Store
+
+# Windows thumbnail cache files
+Thumbs.db
+ehthumbs.db
+
+# Generated editor files
+*~
+*.swp
+*.swo
+*.tmp
+*.log
+
+# CMake and build system generated files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile.master
+
+# Temporary files created by tools
+*.pyc
+__pycache__/
+
+# Ignore local configuration files
+*.local
+*.env
+
+# Keep known project files in place; ignore generated artifacts only
+
