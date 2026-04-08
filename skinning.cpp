@@ -9,8 +9,7 @@ using namespace std;
 // CSCI 520 Computer Animation and Simulation
 // Jernej Barbic and Yijing Li
 
-Skinning::Skinning(int numMeshVertices, const double * restMeshVertexPositions,
-    const std::string & meshSkinningWeightsFilename)
+Skinning::Skinning(int numMeshVertices, const double * restMeshVertexPositions, const std::string & meshSkinningWeightsFilename)
 {
   this->numMeshVertices = numMeshVertices;
   this->restMeshVertexPositions = restMeshVertexPositions;
@@ -71,16 +70,31 @@ Skinning::Skinning(int numMeshVertices, const double * restMeshVertexPositions,
   }
 }
 
-void Skinning::applySkinning(const RigidTransform4d * jointSkinTransforms, double * newMeshVertexPositions) const
-{
-  // Students should implement this
+void Skinning::applySkinning(const RigidTransform4d *jointSkinTransforms, double *newMeshVertexPositions) const {
+  for (int vtxID = 0; vtxID < numMeshVertices; vtxID++) {
+    Vec3d restPos(restMeshVertexPositions[3 * vtxID + 0],
+                  restMeshVertexPositions[3 * vtxID + 1],
+                  restMeshVertexPositions[3 * vtxID + 2]);
 
-  // The following below is just a dummy implementation.
-  for(int i=0; i<numMeshVertices; i++)
-  {
-    newMeshVertexPositions[3 * i + 0] = restMeshVertexPositions[3 * i + 0];
-    newMeshVertexPositions[3 * i + 1] = restMeshVertexPositions[3 * i + 1];
-    newMeshVertexPositions[3 * i + 2] = restMeshVertexPositions[3 * i + 2];
+    Vec3d newPos(0.0, 0.0, 0.0);
+
+    for (int j = 0; j < numJointsInfluencingEachVertex; j++) {
+      int jointID =
+          meshSkinningJoints[vtxID * numJointsInfluencingEachVertex + j];
+      double weight =
+          meshSkinningWeights[vtxID * numJointsInfluencingEachVertex + j];
+
+      if (weight == 0.0)
+        continue;
+
+      const RigidTransform4d &T = jointSkinTransforms[jointID];
+      Vec3d transformed = T.getRotation() * restPos + T.getTranslation();
+      newPos += weight * transformed;
+    }
+
+    newMeshVertexPositions[3 * vtxID + 0] = newPos[0];
+    newMeshVertexPositions[3 * vtxID + 1] = newPos[1];
+    newMeshVertexPositions[3 * vtxID + 2] = newPos[2];
   }
 }
 
